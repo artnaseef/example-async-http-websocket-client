@@ -1,0 +1,46 @@
+public class WSTest {
+    public static void main( String[] args ) {
+        try {
+            AsyncHttpClient c = new AsyncHttpClient();
+            WebSocket w = c.prepareGet("ws://127.0.0.1:8080")
+                    .execute(new WebSocketUpgradeHandler.Builder().build())
+                    .get();
+
+            w.addWebSocketListener(new WebSocketTextListener() {
+                @Override
+                public void onMessage(String message) {
+                    System.out.println("Message from the server: " + message);
+                }
+
+                @Override
+                public void onFragment(String fragment, boolean last) {
+                    System.out.println("Fragment from the server: " + fragment + "; is this the last one? " + last);
+                }
+
+                @Override
+                public void onOpen(WebSocket websocket) {
+                    System.out.println("New websocket opened.");
+                }
+
+                @Override
+                public void onClose(WebSocket websocket) {
+                    System.out.println("Closing the websocket.");
+                }
+
+                @Override
+                public void onError(Throwable t) {
+                    System.out.println("There was an error: ");
+                    t.printStackTrace();
+                }
+            }).sendTextMessage("Hello!");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+

@@ -27,6 +27,9 @@ public class ExampleWebsocketClient {
     private String          username = "proxyuser";
     private String          password = "proxypassword";
     private String          wsUrl = "ws://localhost:8080/ws/agent";
+    private String          proxyServer = "localhost";
+    private int             proxyServerPort = 808;
+    private ProxyServer.Protocol	proxyProtocol = ProxyServer.Protocol.HTTP;
 
     public static void  main (String[] args) {
         new ExampleWebsocketClient().instanceMain(args);
@@ -53,8 +56,8 @@ public class ExampleWebsocketClient {
                 LOG.info("with proxy user {}", username);
                 futureWebsocket =
                         this.client.prepareGet(this.wsUrl)
-                                .setProxyServer(new ProxyServer(ProxyServer.Protocol.HTTP,
-                                                "192.168.56.101", 808, this.username, this.password))
+                                .setProxyServer(new ProxyServer(ProxyServer.Protocol.HTTPS,
+                                                this.proxyServer, this.proxyServerPort, this.username, this.password))
                                 .execute(new WebSocketUpgradeHandler.Builder().build());
             }
 
@@ -64,6 +67,7 @@ public class ExampleWebsocketClient {
             if ( websocket != null ) {
                 LOG.info("received websocket connection");
 
+                final WebsocketSender sender = new WebsocketSender(websocket);
                 websocket.addWebSocketListener(new WebSocketTextListener() {
                     @Override
                     public void onMessage(String s) {
@@ -83,17 +87,22 @@ public class ExampleWebsocketClient {
                     @Override
                     public void onClose(WebSocket webSocket) {
                         LOG.info("websocket connection closed");
+                        sender.shutdown();
                     }
 
                     @Override
                     public void onError(Throwable throwable) {
                         LOG.error("websocket error", throwable);
+                        sender.shutdown();
                     }
                 });
 
                 LOG.info("sending websocket message");
                 websocket.sendTextMessage("Mark");
                 LOG.info("sent websocket message");
+
+                // Start a sender to continually send messages across the socket.
+                sender.start();
             } else {
                 LOG.error("failed to create websocket connection");
                 // TBD: get more information here
@@ -119,12 +128,18 @@ public class ExampleWebsocketClient {
                 this.username = oneArg.substring(5);
             } else if ( oneArg.startsWith("password=") ) {
                 this.password = oneArg.substring(9);
+            } else if ( oneArg.startsWith("provider=") ) {
+                this.parseProvider(oneArg.substring(9));
+            } else if ( oneArg.startsWith("proxyProtocol=") ) {
+                this.parseProxyProtocol(oneArg.substring(14));
+            } else if ( oneArg.startsWith("proxyServer=") ) {
+                this.proxyServer = oneArg.substring(12);
+            } else if ( oneArg.startsWith("proxyServerPort=") ) {
+                this.proxyServerPort = Integer.valueOf(oneArg.substring(16));
             } else if ( oneArg.startsWith("url=") ) {
                 this.wsUrl = oneArg.substring(4);
             } else if ( oneArg.startsWith("useProxy=") ) {
                 this.withProxy = Boolean.parseBoolean(oneArg.substring(9));
-            } else if ( oneArg.startsWith("provider=") ) {
-                this.parseProvider(oneArg.substring(9));
             } else {
                 System.err.println("Unrecognized command-line argument " + oneArg);
                 System.exit(1);
@@ -142,6 +157,53 @@ public class ExampleWebsocketClient {
         } else {
             System.err.println("Unrecognized provider \"" + provider + "\"; try \"grizzly\" or \"netty\"");
             System.exit(1);
+        }
+    }
+
+    protected void  parseProxyProtocol (String proto) {
+        String  upper = proto.toUpperCase();
+
+        if ( upper.equals("HTTP") ) {
+            this.proxyProtocol = ProxyServer.Protocol.HTTP;
+        } else if ( upper.equals("HTTPS") ) {
+            this.proxyProtocol = ProxyServer.Protocol.HTTPS;
+        }
+    }
+
+    protected class WebsocketSender extends Thread {
+        protected boolean   runningInd = true;
+        protected WebSocket socket;
+
+        public WebsocketSender (WebSocket sock) {
+            this.socket = sock;
+        }
+
+        public void run () {
+            int iter = 0;
+
+            while ( this.runningInd ) {
+                try {
+                    this.sleep(1000);
+                    LOG.info("Sending Tom " + iter);
+
+                    // TBD: no exceptions on failure to send to closed websocket?
+                    this.socket.sendTextMessage("Tom " + iter);
+                    iter++;
+                } catch ( InterruptedException intExc ) {
+                    if ( runningInd ) {
+                        LOG.warn("websocket sender interrupted in running state");
+                    }
+                }
+            }
+        }
+
+        public void shutdown () {
+            this.runningInd = false;
+            this.interrupt();
+        }
+
+        public void waitForShutdown () throws InterruptedException {
+            this.join();
         }
     }
 }

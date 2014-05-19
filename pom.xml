@@ -12,23 +12,23 @@
         <dependency>
             <groupId>com.ning</groupId>
             <artifactId>async-http-client</artifactId>
-            <version>1.8.1</version>
+            <version>${async_http_client.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.glassfish.grizzly</groupId>
             <artifactId>grizzly-core</artifactId>
-            <version>2.3.12</version>
+            <version>${grizzly.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.grizzly</groupId>
             <artifactId>grizzly-http</artifactId>
-            <version>2.3.12</version>
+            <version>${grizzly.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.grizzly</groupId>
             <artifactId>grizzly-websockets</artifactId>
-            <version>2.3.12</version>
+            <version>${grizzly.version}</version>
         </dependency>
             
 
@@ -44,4 +44,17 @@
         </dependency>
     </dependencies>
 
+    <properties>
+            <async_http_client.version>1.8.8</async_http_client.version>
+            <grizzly.version>2.3.11</grizzly.version>
+
+            <!-- <async_http_client.version>1.7.8</async_http_client.version> -->
+            <!-- <grizzly.version>2.2.16</grizzly.version> -->
+
+            <!-- <async_http_client.version>1.7.11</async_http_client.version> -->
+            <!-- <grizzly.version>2.2.21</grizzly.version> -->
+
+            <!-- <async_http_client.version>1.8.1</async_http_client.version> -->
+            <!-- <grizzly.version>2.3.12</grizzly.version> -->
+    </properties>
 </project>

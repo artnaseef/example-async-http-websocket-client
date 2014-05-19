@@ -3,9 +3,9 @@
 mvn exec:java -Dexec.mainClass=com.artnaseef.websocketclient.ExampleWebsocketClient -Dexec.arguments="useProxy=false,url=wss://localhost:8443/ws/agent,provider=grizzly"
 ```
 
-*Execute With Proxy*
+*Execute With Proxy (only Netty)*
 ```
-mvn exec:java -Dexec.mainClass=com.artnaseef.websocketclient.ExampleWebsocketClient -Dexec.arguments="useProxy=true,user=proxyUser,password=proxyPassword,proxyServer=localhost,proxyPort=8888,url=wss://localhost:8443/ws/agent,provider=grizzly"
+mvn exec:java -Dexec.mainClass=com.artnaseef.websocketclient.ExampleWebsocketClient -Dexec.arguments="useProxy=true,user=proxyUser,password=proxyPassword,proxyServer=localhost,proxyPort=8888,url=wss://localhost:8443/ws/agent,provider=netty"
 ```
 
 *Successful Handshake*

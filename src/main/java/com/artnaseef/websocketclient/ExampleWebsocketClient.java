@@ -7,7 +7,6 @@ import com.ning.http.client.providers.grizzly.GrizzlyAsyncHttpProvider;
 import com.ning.http.client.websocket.WebSocket;
 import com.ning.http.client.websocket.WebSocketTextListener;
 import com.ning.http.client.websocket.WebSocketUpgradeHandler;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,8 +55,7 @@ public class ExampleWebsocketClient {
                 LOG.info("with proxy user {}", username);
                 futureWebsocket =
                         this.client.prepareGet(this.wsUrl)
-                                .setProxyServer(new ProxyServer(ProxyServer.Protocol.HTTPS,
-                                                this.proxyServer, this.proxyServerPort, this.username, this.password))
+                                .setProxyServer(new ProxyServer(this.proxyProtocol, this.proxyServer, this.proxyServerPort, this.username, this.password))
                                 .execute(new WebSocketUpgradeHandler.Builder().build());
             }
 
@@ -167,6 +165,11 @@ public class ExampleWebsocketClient {
             this.proxyProtocol = ProxyServer.Protocol.HTTP;
         } else if ( upper.equals("HTTPS") ) {
             this.proxyProtocol = ProxyServer.Protocol.HTTPS;
+        } else if ( upper.equals("NTLM") ) {
+            this.proxyProtocol = ProxyServer.Protocol.NTLM;
+        } else {
+            System.err.println("Unrecognized protocol \"" + proto + "\"; try \"HTTP\", \"HTTPS\", or \"NTLM\"");
+            System.exit(1);
         }
     }
 
